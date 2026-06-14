@@ -1,0 +1,36 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: #9fb8c8; }
+body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: #fff; }
+#game { display: block; width: 100vw; height: 100vh; cursor: crosshair; }
+
+#crosshair {
+  position: fixed; left: 50%; top: 50%; width: 6px; height: 6px;
+  margin: -3px 0 0 -3px; border-radius: 50%;
+  background: rgba(255,255,255,.9); box-shadow: 0 0 0 2px rgba(0,0,0,.5);
+  pointer-events: none;
+}
+
+#hud {
+  position: fixed; top: 12px; left: 14px; pointer-events: none;
+  font-size: 14px; line-height: 1.5; text-shadow: 0 1px 3px rgba(0,0,0,.7);
+}
+#hud #destroyed { color: #ffd27a; font-weight: 600; }
+#hud #meshinfo { color: #cfe0ea; font-size: 12px; opacity: .8; }
+
+#overlay {
+  position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(120% 120% at 50% 30%, rgba(30,50,70,.55), rgba(10,18,28,.88));
+  backdrop-filter: blur(2px); z-index: 10;
+}
+.panel {
+  max-width: 460px; padding: 32px 36px; text-align: center;
+  background: rgba(16,26,38,.82); border: 1px solid rgba(255,255,255,.12);
+  border-radius: 18px; box-shadow: 0 20px 60px rgba(0,0,0,.5);
+}
+.panel h1 { font-size: 40px; letter-spacing: 3px; margin-bottom: 4px; }
+.panel h1 span { color: #ffce5c; }
+.panel .tag { color: #ffce5c; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 16px; }
+.panel p { color: #d6e2ec; margin-bottom: 14px; font-size: 15px; }
+.panel ul { text-align: left; display: inline-block; margin: 6px auto 18px; color: #cdd9e4; font-size: 14px; line-height: 1.9; }
+.panel .go { color: #fff; font-weight: 700; letter-spacing: 1px; animation: pulse 1.6s infinite; }
+@keyframes pulse { 0%,100% { opacity: .5; } 50% { opacity: 1; } }

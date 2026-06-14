@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#9fb8c8" />
+  <title>Saltforge 3D</title>
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" href="./icon.svg" />
+  <link rel="stylesheet" href="./css/style.css" />
+  <script type="importmap">
+    { "imports": { "three": "./vendor/three.module.js" } }
+  </script>
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <div id="crosshair"></div>
+
+  <div id="hud">
+    <div id="fps">– fps</div>
+    <div id="destroyed">0 blocks destroyed</div>
+    <div id="meshinfo"></div>
+  </div>
+
+  <div id="overlay">
+    <div class="panel">
+      <h1>SALTFORGE <span>3D</span></h1>
+      <p class="tag">Milestone&nbsp;0 — blow a hole in the wall</p>
+      <p>Across the strait sits an enemy fort. Lob cannon shots and watch it crumble.</p>
+      <ul>
+        <li><b>Click</b> to look around (mouse)</li>
+        <li><b>WASD</b> move &nbsp;·&nbsp; <b>Space</b> jump</li>
+        <li><b>Left-click</b> fire a cannonball — the gold arc shows where it lands</li>
+        <li><b>Esc</b> release the mouse</li>
+      </ul>
+      <p class="go">Click to begin</p>
+    </div>
+  </div>
+
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>

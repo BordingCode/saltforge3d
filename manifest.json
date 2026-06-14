@@ -1,0 +1,11 @@
+{
+  "name": "Saltforge 3D",
+  "short_name": "Saltforge",
+  "description": "A first-person voxel duel of fortresses — gather, build, scout and bombard.",
+  "start_url": "./index.html",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#0a121c",
+  "theme_color": "#9fb8c8",
+  "icons": [{ "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}
