@@ -29,5 +29,5 @@ export const SOLID = (b) => b !== BLOCK.AIR && b !== BLOCK.WATER;
 export const GRAVITY = 20;
 export const MOVE_SPEED = 6.5;
 export const JUMP_SPEED = 8;
-export const PROJECTILE_SPEED = 38;
+export const PROJECTILE_SPEED = 44;
 export const BLAST_RADIUS = 3.0;

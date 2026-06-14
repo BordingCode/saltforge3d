@@ -9,13 +9,13 @@ function ball() {
 }
 
 export class Projectile {
-  constructor(scene, pos, vel) {
+  constructor(scene, pos, vel, color = 0x1a1a1a) {
     this.scene = scene;
     this.pos = pos.clone();
     this.vel = vel.clone();
     this.alive = true;
     this.life = 9;
-    this.mesh = new THREE.Mesh(ball(), new THREE.MeshLambertMaterial({ color: 0x1a1a1a }));
+    this.mesh = new THREE.Mesh(ball(), new THREE.MeshLambertMaterial({ color, emissive: color, emissiveIntensity: 0.3 }));
     this.mesh.position.copy(this.pos);
     scene.add(this.mesh);
   }

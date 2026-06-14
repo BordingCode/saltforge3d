@@ -1,15 +1,18 @@
 // Offline cache. Bump CACHE on every deploy so browsers fetch fresh files.
-const CACHE = 'saltforge3d-v1';
+const CACHE = 'saltforge3d-v2';
 const ASSETS = [
   './', './index.html', './manifest.json', './icon.svg',
   './css/style.css',
   './vendor/three.module.js',
   './js/config.js', './js/main.js',
   './js/engine/rng.js', './js/engine/audio.js',
-  './js/voxel/world.js', './js/voxel/mesher.js', './js/voxel/chunks.js',
-  './js/world/worldgen.js',
+  './js/voxel/world.js', './js/voxel/mesher.js', './js/voxel/chunks.js', './js/voxel/raycast.js',
+  './js/world/worldgen.js', './js/world/fog.js',
   './js/player/controls.js',
-  './js/combat/projectile.js', './js/combat/destruction.js', './js/combat/combat.js',
+  './js/combat/projectile.js', './js/combat/destruction.js', './js/combat/combat.js', './js/combat/ballistics.js',
+  './js/game/state.js', './js/game/keeps.js',
+  './js/ai/rival.js',
+  './js/ui/hud.js',
 ];
 
 self.addEventListener('install', (e) => {
