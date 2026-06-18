@@ -7,6 +7,7 @@ export class GameState {
     this.firesalt = 4;
     this.tool = TOOL.CANNON;
     this.reveal = 0;      // 0..1 enemy fog lifted
+    this.shotsFired = 0;  // cannonballs the player has launched
     this.over = false;
     this.won = false;
   }

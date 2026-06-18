@@ -12,7 +12,7 @@ import { Audio } from './engine/audio.js';
 import { GameState, TOOL } from './game/state.js';
 import { Keeps } from './game/keeps.js';
 import { Rival } from './ai/rival.js';
-import { initHUD, setTool, updateHUD, toast, showEnd } from './ui/hud.js';
+import { initHUD, setTool, updateHUD, toast, showEnd, hitMarker } from './ui/hud.js';
 
 // ---- Renderer / scene ----
 const canvas = document.getElementById('game');
@@ -64,6 +64,12 @@ const combat = new CombatSystem(scene, world, audio);
 const rival = new Rival(world, scene, keeps, audio);
 const hud = initHUD();
 rival.onMessage = (m) => toast(hud, m, 2800);
+// Player landed a shell on the enemy Keep — the core payoff: sound + hit-marker + punchy bar + toast.
+combat.onKeepHit = (n) => {
+  audio.keepHit();
+  hitMarker(hud, keeps);
+  toast(hud, `Direct hit on their Keep! −${n}`, 1600);
+};
 setTool(hud, state.tool);
 
 // ---- Interaction ----
@@ -113,6 +119,7 @@ function doScout() {
 function doFire() {
   if (state.firesalt <= 0) { toast(hud, 'Out of firesalt! Dig deep under your island (press 1).'); return; }
   state.firesalt -= 1;
+  state.shotsFired += 1;
   const { o, d } = aim();
   _org.copy(o).addScaledVector(d, 1.2);
   combat.fire(_org, d);
@@ -161,7 +168,14 @@ addEventListener('resize', () => {
 function endGame(won) {
   if (state.over) return;
   state.over = true; state.won = won;
-  showEnd(hud, won);
+  showEnd(hud, won, {
+    destroyed: combat.destroyed,
+    enemyHP: keeps.enemyHP(), enemyMax: keeps.enemyMax,
+    playerHP: keeps.playerHP(), playerMax: keeps.playerMax,
+    firesalt: state.firesalt,
+    shotsFired: state.shotsFired,
+    rivalFired: rival.firedCount,
+  });
   audio.fanfare(won);
   if (document.pointerLockElement === canvas) document.exitPointerLock();
 }

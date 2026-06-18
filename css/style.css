@@ -10,6 +10,38 @@ body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: #ff
   pointer-events: none; z-index: 5;
 }
 
+/* Hit-marker: four short ticks around the crosshair, pops on a Keep hit */
+#hitmarker {
+  position: fixed; left: 50%; top: 50%; width: 26px; height: 26px;
+  margin: -13px 0 0 -13px; pointer-events: none; z-index: 6;
+  opacity: 0; transform: rotate(45deg) scale(1.4);
+}
+#hitmarker.show { animation: hitpop .32s ease-out; }
+#hitmarker i {
+  position: absolute; left: 50%; top: 50%; width: 2px; height: 8px;
+  background: #ffd45c; box-shadow: 0 0 4px rgba(0,0,0,.8); border-radius: 1px;
+}
+#hitmarker i:nth-child(1) { margin: -13px 0 0 -1px; }
+#hitmarker i:nth-child(2) { margin: 5px 0 0 -1px; }
+#hitmarker i:nth-child(3) { margin: -1px 0 0 -13px; transform: rotate(90deg); }
+#hitmarker i:nth-child(4) { margin: -1px 0 0 5px; transform: rotate(90deg); }
+@keyframes hitpop {
+  0%   { opacity: 1; transform: rotate(45deg) scale(.6); }
+  100% { opacity: 0; transform: rotate(45deg) scale(1.5); }
+}
+
+/* Enemy Keep bar punch on a player hit */
+#enemyhp-bar.hit { animation: barflash .35s ease-out; }
+@keyframes barflash {
+  0%   { filter: brightness(2.4); box-shadow: 0 0 14px #fff; }
+  100% { filter: brightness(1);   box-shadow: none; }
+}
+#enemyhp .barlabel.bump { animation: lblbump .35s ease-out; }
+@keyframes lblbump {
+  0%   { transform: scale(1.35); color: #fff; }
+  100% { transform: scale(1);    color: inherit; }
+}
+
 /* ---- HUD ---- */
 #hud-top, #hud-right, #hud-bottom { position: fixed; pointer-events: none; z-index: 4; text-shadow: 0 1px 3px rgba(0,0,0,.7); }
 #hud-top { top: 12px; left: 14px; font-size: 16px; line-height: 1.5; }

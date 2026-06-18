@@ -52,6 +52,16 @@ export class DebrisSystem {
     puff.position.copy(center);
     this.scene.add(puff);
     this.items.push({ mesh: puff, kind: 'smoke', life: 0.6, max: 0.6 });
+
+    // bright additive impact flash — reads even at distance (reuses the puff slot/geometry)
+    const fm = new THREE.MeshBasicMaterial({
+      color: 0xffa030, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false,
+    });
+    const flash = new THREE.Mesh(this.puff, fm);
+    flash.position.copy(center);
+    flash.scale.setScalar(2.2);
+    this.scene.add(flash);
+    this.items.push({ mesh: flash, kind: 'flash', life: 0.15, max: 0.15 });
   }
 
   update(dt) {
@@ -62,6 +72,11 @@ export class DebrisSystem {
         it.mesh.position.addScaledVector(it.vel, dt);
         it.mesh.rotation.x += it.spin.x * dt;
         it.mesh.rotation.y += it.spin.y * dt;
+      } else if (it.kind === 'flash') {
+        const t = 1 - it.life / it.max;
+        const s = 2.2 + t * 3.5;
+        it.mesh.scale.set(s, s, s);
+        it.mesh.material.opacity = 0.95 * (1 - t);
       } else {
         const t = 1 - it.life / it.max;
         const s = 1 + t * 3;

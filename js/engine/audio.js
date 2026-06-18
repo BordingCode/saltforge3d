@@ -61,6 +61,20 @@ export class Audio {
     });
   }
 
+  // Direct hit on the enemy Keep — a bright, satisfying two-note sting (distinct from crunch).
+  keepHit() {
+    const c = this._c(), t = c.currentTime;
+    const o = c.createOscillator(); o.type = 'triangle';
+    o.frequency.setValueAtTime(523, t);
+    o.frequency.setValueAtTime(784, t + 0.07);
+    o.frequency.exponentialRampToValueAtTime(660, t + 0.28);
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.28, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
+    o.connect(g).connect(c.destination); o.start(t); o.stop(t + 0.37);
+  }
+
   crunch() {
     const c = this._c(), t = c.currentTime, dur = 0.4;
     const buf = c.createBuffer(1, Math.floor(c.sampleRate * dur), c.sampleRate);

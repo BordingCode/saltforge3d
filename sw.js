@@ -1,5 +1,5 @@
 // Offline cache. Bump CACHE on every deploy so browsers fetch fresh files.
-const CACHE = 'saltforge3d-v2';
+const CACHE = 'saltforge3d-v3';
 const ASSETS = [
   './', './index.html', './manifest.json', './icon.svg',
   './css/style.css',
