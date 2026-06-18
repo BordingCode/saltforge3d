@@ -5,7 +5,7 @@ const TOOL_INFO = {
   [TOOL.MINE]:   { name: '⛏ Mine',   hint: 'Left-click a block to mine it (+stone, +firesalt deep down)' },
   [TOOL.BUILD]:  { name: '🧱 Build',  hint: 'Left-click to place a wall block (costs 1 stone)' },
   [TOOL.SCOUT]:  { name: '🔭 Scout',  hint: 'Look at the fog and left-click to scout the enemy island' },
-  [TOOL.CANNON]: { name: '💥 Cannon', hint: 'Left-click to fire (costs 1 firesalt) — gold arc = where it lands' },
+  [TOOL.CANNON]: { name: '💥 Cannon', hint: 'Left-click to fire (1 firesalt) — gold arc lands on the Keep, RED arc = blocked by their wall' },
 };
 
 export function initHUD() {

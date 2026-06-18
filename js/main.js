@@ -128,13 +128,17 @@ function doFire() {
 function doRepair() {
   const pc = keeps.playerCenter();
   if (camera.position.distanceTo(pc) > 16) { toast(hud, 'Stand by your Keep to repair it.'); return; }
+  // Rate cap: repair has a cooldown and a small per-use limit, so a fully-armed rival out-paces
+  // pure turtling — the deepest-ammo offence valve still wins. Honest, not a hidden multiplier.
+  if (state.repairCd > 0) { toast(hud, `Crew still working — repair ready in ${state.repairCd.toFixed(1)}s.`); return; }
   const missing = keeps.playerMax - keeps.playerHP();
   if (missing <= 0) { toast(hud, 'Your Keep is intact.'); return; }
-  const n = Math.min(missing, Math.floor(state.stone / 3), 4);
+  const n = Math.min(missing, Math.floor(state.stone / 3), 2);
   if (n <= 0) { toast(hud, 'Need 3 stone per Keep block.'); return; }
   keeps.repairPlayer(n);
   state.stone -= n * 3;
-  toast(hud, `Repaired ${n} Keep block${n > 1 ? 's' : ''}.`);
+  state.repairCd = 3.5;
+  toast(hud, `Repaired ${n} Keep block${n > 1 ? 's' : ''} — answer their fire, don't just turtle.`);
   audio.tap();
 }
 
@@ -192,6 +196,7 @@ function loop(now) {
     player.update(dt);
     rival.update(dt, t);
     if (scoutCd > 0) scoutCd -= dt;
+    if (state.repairCd > 0) state.repairCd = Math.max(0, state.repairCd - dt);
   }
   const { o, d } = aim();
   if (state.tool === TOOL.CANNON && !state.over) {

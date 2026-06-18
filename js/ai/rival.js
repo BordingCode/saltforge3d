@@ -1,11 +1,12 @@
 // The rival: a SEEN clock. Arms on a fixed seeded schedule (never peeks at you), shells your
 // Keep with telegraphed arcs that "walk in" toward the last impact — reads as a gunner, not an oracle.
 import * as THREE from 'three';
-import { PROJECTILE_SPEED, BLAST_RADIUS, GRAVITY } from '../config.js';
+import { PROJECTILE_SPEED, BLAST_RADIUS, GRAVITY, BLOCK } from '../config.js';
 import { mulberry32, hashSeed } from '../engine/rng.js';
 import { solveArc } from '../combat/ballistics.js';
 import { Projectile } from '../combat/projectile.js';
 import { carveSphere } from '../combat/destruction.js';
+import { ENEMY_ISLAND } from '../world/worldgen.js';
 
 export class Rival {
   constructor(world, scene, keeps, audio) {
@@ -23,6 +24,13 @@ export class Rival {
     this.onMessage = null;     // (text) => void
     this._speed = PROJECTILE_SPEED + 8;
 
+    // ---- Visible, SEEN menace: the rival physically arms its fort on a fixed seeded clock. ----
+    // Growth never peeks at the player — it is driven purely by the menace meter crossing
+    // pre-baked thresholds, so a scout reveals a fort that has honestly changed (taller wall
+    // courses, cannon emplacements glowing molten-orange). All voxel edits go through world.set,
+    // reusing the remesh-dirty path.
+    this._buildGrowthPlan();
+
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(80 * 3), 3));
     this.telGeo = g;
@@ -31,8 +39,80 @@ export class Rival {
     scene.add(this.tel);
   }
 
+  // Pre-bake an ordered list of growth steps the fort performs as menace rises. Positions are
+  // derived from the enemy island geometry (same formula buildFort used), so they land on the
+  // REAL fort. Each step is {at: menaceThreshold, fn}. Honest + seeded: no player state read.
+  _buildGrowthPlan() {
+    const w = this.world;
+    const cx = Math.floor(ENEMY_ISLAND.cx), cz = Math.floor(ENEMY_ISLAND.cz);
+    const R = 8, side = -1; // enemy fort faces the player (lower z)
+    const topY = (x, z) => { for (let y = w.Y - 1; y >= 0; y--) if (w.isSolid(x, y, z)) return y; return 0; };
+
+    this.growth = [];
+
+    // 1) Brighten the two existing cannon emplacements to a glowing "armed" state.
+    for (const ox of [-4, 4]) {
+      const x = cx + ox, z = cz + side * R;
+      const gy = topY(x, z); // emplacement METAL sits at top of the wall column
+      this.growth.push({
+        cannon: true,
+        fn: () => {
+          // turn whatever METAL caps this column molten-orange (skip if already destroyed)
+          for (let yy = gy; yy <= gy + 1; yy++) {
+            if (w.get(x, yy, z) === BLOCK.METAL) w.set(x, yy, z, BLOCK.METAL_HOT);
+            if (w.get(x, yy, z + side) === BLOCK.METAL) w.set(x, yy, z + side, BLOCK.METAL_HOT);
+          }
+        },
+      });
+    }
+
+    // 2) Raise NEW cannon blocks on the facing wall — a visible new gun emplacement.
+    for (const ox of [-1, 1, 0]) {
+      const x = cx + ox * 3, z = cz + side * R;
+      const gy = topY(x, z);
+      this.growth.push({
+        cannon: true,
+        fn: () => { if (w.get(x, gy + 1, z) === BLOCK.AIR) w.set(x, gy + 1, z, BLOCK.METAL_HOT); },
+      });
+    }
+
+    // 3) Raise the facing wall a course taller (kiln-bright brick) — the silhouette grows.
+    // Walk the ring across the player-facing arc (angles centred on the strait side) and add a
+    // brick on top of the existing wall column; remesh shows a taller fort once it's scouted.
+    const faceAng = side < 0 ? 270 : 90; // degrees toward the strait
+    for (let da = -42; da <= 42; da += 14) {
+      const rad = ((faceAng + da) * Math.PI) / 180;
+      const x = Math.round(cx + Math.cos(rad) * R);
+      const z = Math.round(cz + Math.sin(rad) * R);
+      const gy = topY(x, z);
+      this.growth.push({
+        fn: () => { if (w.get(x, gy + 1, z) === BLOCK.AIR) w.set(x, gy + 1, z, BLOCK.BRICK_HOT); },
+      });
+    }
+
+    // Spread the steps evenly across the menace clock (first one early so growth is felt fast).
+    const n = this.growth.length;
+    this.growth.forEach((s, i) => { s.at = 8 + (88 * i) / Math.max(1, n - 1); });
+    this._grownCount = 0;
+  }
+
+  // Fire any growth steps whose threshold the (fixed-clock) menace has now crossed.
+  _tickGrowth() {
+    while (this._grownCount < this.growth.length && this.menace >= this.growth[this._grownCount].at) {
+      const step = this.growth[this._grownCount];
+      step.fn();
+      this._grownCount++;
+      if (this.onMessage) {
+        this.onMessage(step.cannon
+          ? '⚒ Their forge-smoke thickens — a new cannon glows on the far wall.'
+          : '⚒ Across the strait, their wall climbs another course.');
+      }
+    }
+  }
+
   update(dt, t) {
     this.menace = Math.min(100, this.menace + dt * 1.25); // fully armed in ~80s
+    this._tickGrowth();
 
     if (this.mode === 'idle') {
       this.timer -= dt;

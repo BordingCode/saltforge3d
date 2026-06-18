@@ -1,6 +1,6 @@
 // Fires cannonballs, applies destruction on impact, and draws a live aim trajectory.
 import * as THREE from 'three';
-import { GRAVITY, PROJECTILE_SPEED, BLAST_RADIUS } from '../config.js';
+import { GRAVITY, PROJECTILE_SPEED, BLAST_RADIUS, BLOCK } from '../config.js';
 import { Projectile } from './projectile.js';
 import { carveSphere, DebrisSystem } from './destruction.js';
 
@@ -32,19 +32,42 @@ export class CombatSystem {
     const arr = this.previewGeo.attributes.position.array;
     const dt = 0.05, N = 64;
     let count = 0;
+    let blocked = false; // arc ends on an enemy WALL (shot wasted) vs the Keep / open ground
     for (let i = 0; i < N; i++) {
       arr[count * 3] = pos.x; arr[count * 3 + 1] = pos.y; arr[count * 3 + 2] = pos.z;
       count++;
       vel.y -= GRAVITY * dt;
       pos.addScaledVector(vel, dt);
-      if (this.world.isSolid(Math.floor(pos.x), Math.floor(pos.y), Math.floor(pos.z))) {
+      const bx = Math.floor(pos.x), by = Math.floor(pos.y), bz = Math.floor(pos.z);
+      if (this.world.isSolid(bx, by, bz)) {
         arr[count * 3] = pos.x; arr[count * 3 + 1] = pos.y; arr[count * 3 + 2] = pos.z; count++;
+        const b = this.world.get(bx, by, bz);
+        // Landing inside the blast radius of any Keep block counts as "on target". Otherwise, if
+        // it terminates on enemy fort masonry, the shot is wasted on the wall — telegraph it red.
+        const onTarget = b === BLOCK.KEEP || this._keepNearby(pos, BLAST_RADIUS);
+        blocked = !onTarget && (b === BLOCK.BRICK || b === BLOCK.BRICK_HOT ||
+                                b === BLOCK.METAL || b === BLOCK.METAL_HOT);
         break;
       }
       if (pos.y < -3) break;
     }
     this.previewGeo.setDrawRange(0, count);
     this.previewGeo.attributes.position.needsUpdate = true;
+    // gold = good shot; red = the arc dies on their wall (in-verb "why do my shots do nothing?")
+    this.preview.material.color.setHex(blocked ? 0xff4a2a : 0xffe08a);
+  }
+
+  // Is any Keep block within r of point p? (so grazing the wall but bursting the Keep stays gold)
+  _keepNearby(p, r) {
+    const r2 = r * r;
+    for (let y = Math.floor(p.y - r); y <= Math.ceil(p.y + r); y++)
+      for (let z = Math.floor(p.z - r); z <= Math.ceil(p.z + r); z++)
+        for (let x = Math.floor(p.x - r); x <= Math.ceil(p.x + r); x++) {
+          if (this.world.get(x, y, z) !== BLOCK.KEEP) continue;
+          const dx = x + 0.5 - p.x, dy = y + 0.5 - p.y, dz = z + 0.5 - p.z;
+          if (dx * dx + dy * dy + dz * dz <= r2) return true;
+        }
+    return false;
   }
 
   update(dt) {
